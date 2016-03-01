@@ -3,7 +3,7 @@ if nargin < 2
     wavelet_name = 'bior4.4';
 end
 
-imgsWave_detail=cell(size(paths),4,wavelet_scale);
+imgsWave_dewtail=cell(size(paths),4,wavelet_scale);
 imgs = cell(size(paths));
 imgsCB = cell(size(paths));
 imgsCR = cell(size(paths));
