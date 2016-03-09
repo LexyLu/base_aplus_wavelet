@@ -1,9 +1,5 @@
-function [imgsWave_detail,imgs,imgsCB,imgsCR] = load_images(paths, wavelet_scale, wavelet_name)
-if nargin < 2
-    wavelet_name = 'bior4.4';
-end
+function [imgs,imgsCB,imgsCR] = load_images(paths)
 
-imgsWave_detail=cell(size(paths),4,wavelet_scale);
 imgs = cell(size(paths));
 imgsCB = cell(size(paths));
 imgsCR = cell(size(paths));
@@ -17,10 +13,6 @@ for i = 1:numel(paths)
     end
     X = im2double(X); % to reduce memory usage
     imgs{i} = X;
-    for j=1:wavelet_scale
-        [imgsWave_detail{i,1,j},imgsWave_detail{i,2,j},imgsWave_detail{i,3,j},imgsWave_detail{i,4,j}]=dwt2(X,wavelet_name);%bior4.4
-        X=imgsWave_detail{i,1,j};
-    end
 end
 
 end
