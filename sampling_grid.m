@@ -1,6 +1,6 @@
 % Returns a sampling grid for an image (using overlapping window)
 %   GRID = SAMPLING_GRID(IMG_SIZE, WINDOW, OVERLAP, BORDER, SCALE)
-function grid = sampling_grid(img_size, window, overlap, border, scale)
+function [grid,border_end_posi_hor,border_end_posi_ver] = sampling_grid(img_size, window, overlap, border, scale)
 
 if nargin < 5
     scale = 1;
@@ -28,6 +28,7 @@ skip = window - overlap; % for small overlaps
 offset = index(1+border(1):skip(1):img_size(1)-window(1)+1-border(1), ...
                1+border(2):skip(2):img_size(2)-window(2)+1-border(2));
 offset = reshape(offset, [1 1 numel(offset)]);
-
+border_end_posi_hor = img_size(1)-window(1)+1-border(1);
+border_end_posi_ver = img_size(2)-window(2)+1-border(2);
 % Prepare 3D grid - should be used as: sampled_img = img(grid);
 grid = repmat(grid, [1 1 numel(offset)]) + repmat(offset, [window 1]);

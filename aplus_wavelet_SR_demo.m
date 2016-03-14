@@ -8,6 +8,9 @@ addpath(fullfile(current_path, '/ksvdbox')) % K-SVD dictionary training algorith
 addpath(fullfile(current_path, '/ompbox')) % Orthogonal Matching Pursuit algorithm
 addpath(fullfile(current_path, '/nlm_post_process')); % NLM post-process algorithm
 
+training_flag = {'_L1_','_L2_'};
+training_index = 2;
+
 wavelet_flag = {'LL','LH','HL','HH'};
 wavelet_scale = 2; % scale of wavelet transform
 
@@ -19,7 +22,7 @@ pattern = '*.bmp'; % Pattern to process
 dict_sizes = 1024;
     
 %% Training
-mat_file = ['conf_zou_wavelet_' num2str(dict_sizes) '_x' num2str(upscaling)];
+mat_file = ['conf_zou_wavelet_' num2str(dict_sizes) training_flag{training_index} 'x' num2str(upscaling)];
 if exist([mat_file '.mat'],'file')
     disp(['Load trained dictionary...' mat_file]);
     load(mat_file, 'conf');
@@ -59,7 +62,12 @@ for i=1:numel(conf.filenames)
     img = modcrop({img},crop_num);
     low = resize(img, 1/conf.scale^conf.level, conf.interpolate_kernel);
     interpolated = resize(low, conf.scale^conf.level, conf.interpolate_kernel);
-    temp = scaleup_wavelet_zeyde( conf,low ); % aplus_wavelet_SR reconstruction
+    if(training_index == 1)
+        temp = scaleup_wavelet_zeyde_L1( conf,low ); % aplus_wavelet_SR reconstruction using L2 norm
+    elseif(training_index == 2)
+        temp = scaleup_wavelet_zeyde_L2( conf,low ); % aplus_wavelet_SR reconstruction using L2 norm
+    end
+    
     res{i} = temp{1};
     
     res_nlm{i} = post_processing(res{i}, low{1},conf.upsample_factor, 0.05, 1.8);
@@ -72,11 +80,12 @@ for i=1:numel(conf.filenames)
         img{1}(conf.window(1,1):end-conf.window(1,1)+1,conf.window(1,1):end-conf.window(1,1)+1) );
 end
 
-if (~ exist(['.\',input_dir,'\results_my_x',num2str(conf.scale)],'dir'))
-    mkdir(['.\',input_dir,'\results_my_x',num2str(conf.scale)]);
+
+if (~ exist(['.\',input_dir,'\results', training_flag{training_index} 'my_x',num2str(conf.scale)],'dir'))
+    mkdir(['.\',input_dir,'\results',training_flag{training_index},'my_x',num2str(conf.scale)]);
 end
-if (~ exist(['.\',input_dir,'\results_my_nlm_x',num2str(conf.scale)],'dir'))
-    mkdir(['.\',input_dir,'\results_my_nlm_x',num2str(conf.scale)]);
+if (~ exist(['.\',input_dir,'\results',training_flag{training_index},'my_nlm_x',num2str(conf.scale)],'dir'))
+    mkdir(['.\',input_dir,'\results',training_flag{training_index},'my_nlm_x',num2str(conf.scale)]);
 end
 for i=1:numel(conf.filenames)
     if (isempty(imgsCB_testGT{i}))
@@ -98,6 +107,6 @@ for i=1:numel(conf.filenames)
     end
     
     [p, n, x] = fileparts(conf.filenames{i});
-    imwrite(res_RGB_my{i},['.\',input_dir,'\results_my_x',num2str(conf.scale),'\',n,'_my',x]);
-    imwrite(res_RGB_my_NLM{i},['.\',input_dir,'\results_my_nlm_x',num2str(conf.scale),'\',n,'_my_nlm',x]);
+    imwrite(res_RGB_my{i},['.\',input_dir,'\results',training_flag{training_index},'my_x',num2str(conf.scale),'\',n,'_my',x]);
+    imwrite(res_RGB_my_NLM{i},['.\',input_dir,'\results',training_flag{training_index},'my_nlm_x',num2str(conf.scale),'\',n,'_my_nlm',x]);
 end
